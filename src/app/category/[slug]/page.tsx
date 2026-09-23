@@ -4,6 +4,7 @@ import { categories } from "@/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { listProducts, mapProductToCard } from "@/lib/products";
 import { ProductCard } from "@/components/store/product-card";
+import { isLadiesCategory } from "@/lib/mens-store";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: Props) {
   const cat = await db.query.categories.findFirst({
     where: and(eq(categories.slug, slug), eq(categories.isActive, true), isNull(categories.deletedAt)),
   });
-  if (!cat) return {};
+  if (!cat || isLadiesCategory(cat)) return {};
   return { title: cat.seoTitle || cat.name, description: cat.seoDescription || cat.description };
 }
 
@@ -23,7 +24,7 @@ export default async function CategoryPage({ params }: Props) {
   const cat = await db.query.categories.findFirst({
     where: and(eq(categories.slug, slug), eq(categories.isActive, true), isNull(categories.deletedAt)),
   });
-  if (!cat) notFound();
+  if (!cat || isLadiesCategory(cat)) notFound();
 
   const { products, total } = await listProducts({ categoryId: cat.id, limit: 48 });
 

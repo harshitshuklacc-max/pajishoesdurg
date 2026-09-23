@@ -8,16 +8,17 @@ import {
   productSizes,
   productVariants,
 } from "@/db/schema";
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { slugify, calcDiscountPercent } from "@/lib/utils";
 import { logAudit } from "@/lib/audit";
+import { notLadiesProductWhere } from "@/lib/mens-store";
 
 export async function GET() {
   const auth = await requireAdmin("products.view");
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const list = await db.query.products.findMany({
-    where: isNull(products.deletedAt),
+    where: and(isNull(products.deletedAt), notLadiesProductWhere),
     with: { images: true, category: true },
     orderBy: (p, { desc }) => [desc(p.updatedAt)],
     limit: 200,

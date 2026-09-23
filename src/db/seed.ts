@@ -32,7 +32,7 @@ async function seed() {
         isEnabled: true,
         content: {
           heading: "Step Into Style at Paji Shoes",
-          description: "Complete variety for mens and ladies — premium footwear in Durg.",
+          description: "Premium men's footwear in Durg — style, comfort, and the right fit.",
           ctaPrimary: "Shop Now",
           ctaSecondary: "Explore Categories",
           imageUrl: "",
@@ -45,13 +45,12 @@ async function seed() {
 
   const categoryData = [
     { name: "Men's Shoes", slug: "mens-shoes", displayOrder: 1 },
-    { name: "Women's Shoes", slug: "womens-shoes", displayOrder: 2 },
-    { name: "Sports Shoes", slug: "sports-shoes", displayOrder: 3 },
-    { name: "Casual Shoes", slug: "casual-shoes", displayOrder: 4 },
-    { name: "Formal Shoes", slug: "formal-shoes", displayOrder: 5 },
-    { name: "Sandals", slug: "sandals", displayOrder: 6 },
-    { name: "Slippers", slug: "slippers", displayOrder: 7 },
-    { name: "Sneakers", slug: "sneakers", displayOrder: 8 },
+    { name: "Sports Shoes", slug: "sports-shoes", displayOrder: 2 },
+    { name: "Casual Shoes", slug: "casual-shoes", displayOrder: 3 },
+    { name: "Formal Shoes", slug: "formal-shoes", displayOrder: 4 },
+    { name: "Sandals", slug: "sandals", displayOrder: 5 },
+    { name: "Slippers", slug: "slippers", displayOrder: 6 },
+    { name: "Sneakers", slug: "sneakers", displayOrder: 7 },
   ];
 
   for (const c of categoryData) {
@@ -73,7 +72,6 @@ async function seed() {
   }
 
   const mensCat = await db.query.categories.findFirst({ where: eq(categories.slug, "mens-shoes") });
-  const womensCat = await db.query.categories.findFirst({ where: eq(categories.slug, "womens-shoes") });
 
   const demoProducts = [
     {
@@ -105,21 +103,6 @@ async function seed() {
       isDemo: true,
       isNewArrival: true,
       description: "Demo product without sizes — add to cart directly.",
-    },
-    {
-      name: "[DEMO] Ladies Comfort Sandal",
-      slug: "demo-ladies-comfort-sandal",
-      sku: "DEMO-SND-001",
-      categoryId: womensCat?.id,
-      sellingPrice: "599.00",
-      mrpPrice: "799.00",
-      discountPercent: 25,
-      stock: 0,
-      hasSizes: false,
-      hasColors: true,
-      isDemo: true,
-      isOnSale: true,
-      description: "Demo out-of-stock example for UI testing.",
     },
   ];
 

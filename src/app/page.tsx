@@ -4,7 +4,8 @@ import { db } from "@/db";
 
 import { categories, videos } from "@/db/schema";
 
-import { and, asc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
+import { storefrontCategoryWhere } from "@/lib/mens-store";
 
 import { BrandHero } from "@/components/home/brand-hero";
 
@@ -58,7 +59,7 @@ export default async function HomePage() {
 
         .findMany({
 
-          where: and(eq(categories.isActive, true)),
+          where: storefrontCategoryWhere,
 
           orderBy: [asc(categories.displayOrder)],
 

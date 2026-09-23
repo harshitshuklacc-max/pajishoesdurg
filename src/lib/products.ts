@@ -10,10 +10,17 @@ import {
   sizes,
 } from "@/db/schema";
 import { and, asc, desc, eq, ilike, inArray, isNull, or, sql, gte, lte } from "drizzle-orm";
+import { isLadiesCategory, mentionsLadiesOrWomen, notLadiesProductWhere } from "@/lib/mens-store";
 
 export async function getProductBySlug(slug: string) {
+  if (mentionsLadiesOrWomen(slug)) return undefined;
   const product = await db.query.products.findFirst({
-    where: and(eq(products.slug, slug), isNull(products.deletedAt), eq(products.isActive, true)),
+    where: and(
+      eq(products.slug, slug),
+      isNull(products.deletedAt),
+      eq(products.isActive, true),
+      notLadiesProductWhere
+    ),
     with: {
       images: { orderBy: [asc(productImages.sortOrder)] },
       category: true,
@@ -22,6 +29,7 @@ export async function getProductBySlug(slug: string) {
       productSizes: { with: { size: true } },
     },
   });
+  if (product?.category && isLadiesCategory(product.category)) return undefined;
   return product;
 }
 
@@ -42,7 +50,11 @@ export async function listProducts(params: {
   const limit = Math.min(params.limit ?? 24, 48);
   const offset = (page - 1) * limit;
 
-  const conditions = [isNull(products.deletedAt), eq(products.isActive, true)];
+  const conditions = [
+    isNull(products.deletedAt),
+    eq(products.isActive, true),
+    notLadiesProductWhere,
+  ];
 
   if (params.categoryId) {
     conditions.push(eq(products.categoryId, params.categoryId));
@@ -50,7 +62,7 @@ export async function listProducts(params: {
     const cat = await db.query.categories.findFirst({
       where: eq(categories.slug, params.categorySlug),
     });
-    if (!cat) {
+    if (!cat || isLadiesCategory(cat)) {
       return { products: [], total: 0, page, limit };
     }
     conditions.push(eq(products.categoryId, cat.id));
@@ -118,7 +130,7 @@ export async function listProducts(params: {
 
 export async function getFeaturedProducts(limit = 8) {
   return db.query.products.findMany({
-    where: and(isNull(products.deletedAt), eq(products.isActive, true), eq(products.isFeatured, true)),
+    where: and(isNull(products.deletedAt), eq(products.isActive, true), eq(products.isFeatured, true), notLadiesProductWhere),
     limit,
     with: { images: { orderBy: [asc(productImages.sortOrder)], limit: 1 } },
     orderBy: [desc(products.updatedAt)],
@@ -133,7 +145,7 @@ export async function getHomepageProducts(type: "new" | "bestseller" | "sale", l
         ? eq(products.isBestseller, true)
         : eq(products.isOnSale, true);
   return db.query.products.findMany({
-    where: and(isNull(products.deletedAt), eq(products.isActive, true), cond),
+    where: and(isNull(products.deletedAt), eq(products.isActive, true), cond, notLadiesProductWhere),
     limit,
     with: { images: { orderBy: [asc(productImages.sortOrder)], limit: 1 } },
   });

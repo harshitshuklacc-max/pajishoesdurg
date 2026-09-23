@@ -6,7 +6,7 @@ const WHY = [
   {
     icon: Sparkles,
     title: "Complete variety",
-    text: "Men's and ladies' styles — curated for everyday comfort and occasion wear.",
+    text: "Men's styles curated for everyday comfort and occasion wear.",
   },
   {
     icon: Truck,

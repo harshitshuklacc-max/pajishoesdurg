@@ -1,15 +1,16 @@
 import Link from "next/link";
 import { db } from "@/db";
 import { categories } from "@/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { storefrontCategoryWhere } from "@/lib/mens-store";
 
 export const metadata = { title: "Categories" };
 
 export default async function CategoriesPage() {
   const list = await db.query.categories
     .findMany({
-      where: eq(categories.isActive, true),
+      where: storefrontCategoryWhere,
       orderBy: [asc(categories.displayOrder)],
     })
     .catch(() => []);

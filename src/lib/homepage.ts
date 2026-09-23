@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { homepageSections } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { MENS_HERO_DESCRIPTION, mentionsLadiesOrWomen } from "@/lib/mens-store";
 
 export type HeroContent = {
   heading: string;
@@ -13,7 +14,7 @@ export type HeroContent = {
 
 const DEFAULT_HERO: HeroContent = {
   heading: "Step Into Style at Paji Shoes",
-  description: "Complete variety for mens and ladies — premium footwear in Durg.",
+  description: MENS_HERO_DESCRIPTION,
   ctaPrimary: "Shop Now",
   ctaSecondary: "Explore Categories",
   imageUrl: "",
@@ -25,7 +26,17 @@ export async function getHeroContent(): Promise<HeroContent> {
     const row = await db.query.homepageSections.findFirst({
       where: eq(homepageSections.key, "hero"),
     });
-    if (row?.content) return { ...DEFAULT_HERO, ...(row.content as Partial<HeroContent>) };
+    if (row?.content) {
+      const merged = { ...DEFAULT_HERO, ...(row.content as Partial<HeroContent>) };
+      if (mentionsLadiesOrWomen(merged.description)) {
+        merged.description = DEFAULT_HERO.description;
+        await db
+          .update(homepageSections)
+          .set({ content: merged, updatedAt: new Date() })
+          .where(eq(homepageSections.key, "hero"));
+      }
+      return merged;
+    }
   } catch {
     /* db not ready */
   }

@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { db } from "@/db";
 import { products, categories } from "@/db/schema";
-import { isNull, eq } from "drizzle-orm";
+import { isNull, and } from "drizzle-orm";
+import { notLadiesProductWhere, storefrontCategoryWhere } from "@/lib/mens-store";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -17,12 +18,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const [prods, cats] = await Promise.all([
       db.query.products.findMany({
-        where: isNull(products.deletedAt),
+        where: and(isNull(products.deletedAt), notLadiesProductWhere),
         columns: { slug: true, updatedAt: true },
         limit: 500,
       }),
       db.query.categories.findMany({
-        where: eq(categories.isActive, true),
+        where: storefrontCategoryWhere,
         columns: { slug: true, updatedAt: true },
       }),
     ]);

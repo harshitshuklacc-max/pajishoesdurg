@@ -6,12 +6,13 @@ import { and, eq, isNull } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { slugify } from "@/lib/utils";
 import { logAudit } from "@/lib/audit";
+import { notLadiesCategoryWhere } from "@/lib/mens-store";
 
 export async function GET() {
   const auth = await requireAdmin("categories.view");
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const list = await db.query.categories.findMany({
-    where: isNull(categories.deletedAt),
+    where: and(isNull(categories.deletedAt), notLadiesCategoryWhere),
     orderBy: (c, { asc }) => [asc(c.displayOrder)],
   });
   return NextResponse.json(list);

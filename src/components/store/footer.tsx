@@ -18,11 +18,12 @@ export async function Footer({ settings }: { settings: StoreSettings }) {
 
     const { categories } = await import("@/db/schema");
 
-    const { and, asc, eq } = await import("drizzle-orm");
+    const { storefrontCategoryWhere } = await import("@/lib/mens-store");
+    const { asc } = await import("drizzle-orm");
 
     categoryLinks = await db.query.categories.findMany({
 
-      where: and(eq(categories.isActive, true)),
+      where: storefrontCategoryWhere,
 
       orderBy: [asc(categories.displayOrder)],
 
