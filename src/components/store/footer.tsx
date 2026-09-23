@@ -93,7 +93,7 @@ export async function Footer({ settings }: { settings: StoreSettings }) {
 
 
 
-        <div className="grid gap-10 pt-12 md:grid-cols-3">
+        <div className="grid gap-10 pt-12 md:grid-cols-2 lg:grid-cols-4">
 
           <div>
 
@@ -108,6 +108,20 @@ export async function Footer({ settings }: { settings: StoreSettings }) {
               <li><Link href="/shop" className="transition hover:text-paji-gold">Shop</Link></li>
 
               <li><Link href="/account" className="transition hover:text-paji-gold">Login</Link></li>
+
+            </ul>
+
+          </div>
+
+          <div>
+
+            <h3 className="font-serif text-lg text-white">Policies</h3>
+
+            <ul className="mt-4 space-y-2.5 text-sm">
+
+              <li><Link href="/terms" className="transition hover:text-paji-gold">Terms and Conditions</Link></li>
+
+              <li><Link href="/privacy" className="transition hover:text-paji-gold">Privacy Policy</Link></li>
 
             </ul>
 
@@ -193,7 +207,11 @@ export async function Footer({ settings }: { settings: StoreSettings }) {
 
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-center text-xs text-white/50 md:flex-row md:text-left lg:px-6">
 
-          <p>© {new Date().getFullYear()} {settings.storeName}. All rights reserved.</p>
+          <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 md:justify-start">
+            <span>© {new Date().getFullYear()} {settings.storeName}. All rights reserved.</span>
+            <Link href="/terms" className="text-white/70 transition hover:text-paji-gold">Terms and Conditions</Link>
+            <Link href="/privacy" className="text-white/70 transition hover:text-paji-gold">Privacy Policy</Link>
+          </p>
 
           <p>
 

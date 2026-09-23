@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS: StoreSettings = {
   instagram: "https://www.instagram.com/pajishoes1/",
   businessDescription: MENS_TAGLINE,
   storeHours: "Open until 10 PM",
-  googleRating: "3.8/5 based on 22 Google reviews",
+  googleRating: "4.8/5 based on 22 Google reviews",
   shippingFlatRate: 0,
   freeShippingAbove: 999,
   codCourierCharge: 200,
