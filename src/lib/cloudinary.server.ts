@@ -19,8 +19,12 @@ export async function uploadBuffer(
     const stream = cloudinary.uploader.upload_stream(
       { folder: `paji-shoes/${folder}`, resource_type: resourceType },
       (err, result) => {
-        if (err || !result) reject(err ?? new Error("Upload failed"));
-        else resolve({ url: result.secure_url, publicId: result.public_id });
+        if (err || !result) {
+          const message =
+            (err && typeof err === "object" && "message" in err && String(err.message)) ||
+            "Upload failed";
+          reject(new Error(message));
+        } else resolve({ url: result.secure_url, publicId: result.public_id });
       }
     );
     stream.end(buffer);
