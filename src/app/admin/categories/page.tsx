@@ -18,6 +18,7 @@ export default function AdminCategoriesPage() {
   const [list, setList] = useState<Category[]>([]);
   const [form, setForm] = useState({ name: "", description: "", imageUrl: "", imagePublicId: "" });
   const [uploading, setUploading] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -82,6 +83,28 @@ export default function AdminCategoriesPage() {
     });
   }
 
+  async function remove(cat: Category) {
+    if (!confirm(`Delete category "${cat.name}"? Products in this category will stay in the store without a category.`)) {
+      return;
+    }
+    setError("");
+    setSuccess("");
+    setDeletingId(cat.id);
+    const res = await fetch("/api/admin/categories", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: cat.id }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setDeletingId(null);
+    if (!res.ok) {
+      setError(data.error || "Could not delete category");
+      return;
+    }
+    setSuccess(`Deleted ${cat.name}`);
+    load();
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Categories</h1>
@@ -139,15 +162,25 @@ export default function AdminCategoriesPage() {
               <p className="font-semibold">{c.name}</p>
               <p className="text-xs text-gray-500">/{c.slug}</p>
               <p className="mt-1 text-sm text-gray-600">{c.isActive ? "Active" : "Inactive"}</p>
-              <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-md bg-paji-orange px-3 py-2 text-xs font-semibold text-white hover:bg-paji-orange-dark">
-                {c.imageUrl ? "Replace image" : "Upload image"}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/jpg"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && updateCategoryImage(c, e.target.files[0])}
-                />
-              </label>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-paji-orange px-3 py-2 text-xs font-semibold text-white hover:bg-paji-orange-dark">
+                  {c.imageUrl ? "Replace image" : "Upload image"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/jpg"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && updateCategoryImage(c, e.target.files[0])}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  disabled={deletingId === c.id}
+                  onClick={() => remove(c)}
+                >
+                  {deletingId === c.id ? "Deleting..." : "Delete"}
+                </button>
+              </div>
             </div>
           </div>
         ))}

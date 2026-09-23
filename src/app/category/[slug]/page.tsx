@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { categories } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { listProducts, mapProductToCard } from "@/lib/products";
 import { ProductCard } from "@/components/store/product-card";
 
@@ -11,14 +11,18 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const cat = await db.query.categories.findFirst({ where: eq(categories.slug, slug) });
+  const cat = await db.query.categories.findFirst({
+    where: and(eq(categories.slug, slug), eq(categories.isActive, true), isNull(categories.deletedAt)),
+  });
   if (!cat) return {};
   return { title: cat.seoTitle || cat.name, description: cat.seoDescription || cat.description };
 }
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  const cat = await db.query.categories.findFirst({ where: eq(categories.slug, slug) });
+  const cat = await db.query.categories.findFirst({
+    where: and(eq(categories.slug, slug), eq(categories.isActive, true), isNull(categories.deletedAt)),
+  });
   if (!cat) notFound();
 
   const { products, total } = await listProducts({ categoryId: cat.id, limit: 48 });
