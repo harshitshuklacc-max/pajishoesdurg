@@ -5,6 +5,7 @@ import { videos } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { logAudit } from "@/lib/audit";
+import { deleteAsset } from "@/lib/cloudinary.server";
 
 export async function GET() {
   const auth = await requireAdmin("videos.manage");
@@ -18,9 +19,9 @@ const emptyToUndef = (v: unknown) => (typeof v === "string" && v.trim() === "" ?
 const schema = z.object({
   title: z.string().min(1),
   description: z.preprocess(emptyToUndef, z.string().optional()),
-  videoUrl: z.string().url(),
+  videoUrl: z.string().min(1),
   videoPublicId: z.preprocess(emptyToUndef, z.string().optional()),
-  thumbnailUrl: z.preprocess(emptyToUndef, z.string().url().optional()),
+  thumbnailUrl: z.preprocess(emptyToUndef, z.string().optional()),
   thumbnailPublicId: z.preprocess(emptyToUndef, z.string().optional()),
   displayOrder: z.number().optional(),
   isActive: z.boolean().optional(),
@@ -74,6 +75,19 @@ export async function DELETE(req: Request) {
   const auth = await requireAdmin("videos.manage");
   if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
   const { id } = await req.json();
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+
+  const existing = await db.query.videos.findFirst({ where: eq(videos.id, id) });
+  if (!existing) return NextResponse.json({ error: "Video not found" }, { status: 404 });
+
+  await deleteAsset(existing.videoPublicId || "", "video");
+  await deleteAsset(existing.thumbnailPublicId || "", "image");
   await db.delete(videos).where(eq(videos.id, id));
+  await logAudit({
+    adminId: auth.session!.adminId,
+    action: "video.deleted",
+    entityType: "video",
+    entityId: id,
+  });
   return NextResponse.json({ ok: true });
 }

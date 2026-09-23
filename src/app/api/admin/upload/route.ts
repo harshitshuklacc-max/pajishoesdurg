@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 import { validateUpload } from "@/lib/cloudinary-url";
 import { uploadBuffer } from "@/lib/cloudinary.server";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 export async function POST(req: Request) {
   const auth = await requireAdmin();
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
-    const result = await uploadBuffer(buffer, folder, type);
+    const result = await uploadBuffer(buffer, folder, type, file.name);
     return NextResponse.json(result);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Upload failed";

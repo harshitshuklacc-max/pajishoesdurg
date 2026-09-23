@@ -9,6 +9,7 @@ type Video = {
   title: string;
   description: string | null;
   videoUrl: string;
+  videoPublicId?: string | null;
   thumbnailUrl: string | null;
   isActive: boolean;
   displayOrder: number;
@@ -28,6 +29,7 @@ export default function AdminVideosPage() {
   const [form, setForm] = useState(emptyForm);
   const [uploading, setUploading] = useState<"video" | "thumbnail" | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -51,9 +53,19 @@ export default function AdminVideosPage() {
     fd.append("type", type);
     try {
       const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const data = await res.json().catch(() => ({}));
+      const raw = await res.text();
+      let data: { error?: string; url?: string; publicId?: string } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = {};
+      }
       if (!res.ok) {
-        setError(data.error || `${field === "video" ? "Video" : "Thumbnail"} upload failed`);
+        setError(data.error || raw.slice(0, 180) || `${field === "video" ? "Video" : "Thumbnail"} upload failed`);
+        return;
+      }
+      if (!data.url) {
+        setError("Upload finished but no video URL was returned.");
         return;
       }
       if (field === "video") {
@@ -95,6 +107,26 @@ export default function AdminVideosPage() {
     load();
   }
 
+  async function remove(v: Video) {
+    if (!confirm(`Delete video "${v.title}"?`)) return;
+    setError("");
+    setSuccess("");
+    setDeletingId(v.id);
+    const res = await fetch("/api/admin/videos", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: v.id }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setDeletingId(null);
+    if (!res.ok) {
+      setError(data.error || "Could not delete video");
+      return;
+    }
+    setSuccess(`Deleted ${v.title}`);
+    load();
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold">Our Glimpses — Videos</h1>
@@ -123,7 +155,7 @@ export default function AdminVideosPage() {
           disabled={uploading !== null}
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], "video", "video")}
         />
-        {uploading === "video" && <p className="text-sm text-paji-orange">Uploading video to Cloudinary…</p>}
+        {uploading === "video" && <p className="text-sm text-paji-orange">Uploading video… this can take a minute</p>}
         {form.videoUrl && (
           <p className="truncate text-xs text-green-700">Video ready: {form.videoUrl}</p>
         )}
@@ -152,14 +184,30 @@ export default function AdminVideosPage() {
       </form>
       <div className="mt-8 space-y-3">
         {list.map((v) => (
-          <div key={v.id} className="flex gap-4 rounded-xl border bg-white p-4">
-            {v.thumbnailUrl && <img src={v.thumbnailUrl} alt="" className="h-20 w-32 rounded object-cover" />}
-            <div>
-              <p className="font-semibold">{v.title}</p>
-              <p className="text-xs text-gray-500">
-                {v.isActive ? "Active" : "Hidden"} · Order {v.displayOrder}
-              </p>
+          <div key={v.id} className="flex items-center justify-between gap-4 rounded-xl border bg-white p-4">
+            <div className="flex min-w-0 items-center gap-4">
+              {v.thumbnailUrl ? (
+                <img src={v.thumbnailUrl} alt="" className="h-20 w-32 shrink-0 rounded object-cover" />
+              ) : (
+                <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
+                  No thumb
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="font-semibold">{v.title}</p>
+                <p className="text-xs text-gray-500">
+                  {v.isActive ? "Active" : "Hidden"} · Order {v.displayOrder}
+                </p>
+              </div>
             </div>
+            <button
+              type="button"
+              className="shrink-0 rounded-md border border-red-200 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50"
+              disabled={deletingId === v.id}
+              onClick={() => remove(v)}
+            >
+              {deletingId === v.id ? "Deleting..." : "Delete"}
+            </button>
           </div>
         ))}
         {!list.length && <p className="text-sm text-gray-400">No videos yet.</p>}
