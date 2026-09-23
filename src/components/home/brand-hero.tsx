@@ -25,18 +25,20 @@ export function BrandHero({
         </p>
 
         <div className="mx-auto mt-8 flex justify-center">
-          <div className="rounded-2xl border-2 border-paji-gold/40 bg-gradient-to-br from-white/10 to-black/20 p-2 shadow-2xl ring-1 ring-white/10">
+          <div className="h-28 w-28 overflow-hidden rounded-2xl border-2 border-paji-gold/40 bg-gradient-to-br from-white/10 to-black/20 p-1 shadow-2xl ring-1 ring-white/10 md:h-36 md:w-36">
             {hasLogo ? (
               <OptimizedImage
                 src={settings.logoUrl}
                 publicId={settings.logoPublicId || undefined}
                 alt=""
-                preset="hero"
-                className="h-28 w-28 rounded-xl object-cover md:h-36 md:w-36"
+                preset="thumbnail"
+                className="block h-full w-full rounded-xl object-contain"
+                width={144}
+                height={144}
                 priority
               />
             ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-paji-charcoal text-5xl md:h-36 md:w-36">
+              <div className="flex h-full w-full items-center justify-center rounded-xl bg-paji-charcoal text-5xl">
                 👟
               </div>
             )}
