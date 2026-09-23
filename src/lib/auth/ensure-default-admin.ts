@@ -18,7 +18,7 @@ async function ensureSuperAdminRole(): Promise<number | null> {
     .onConflictDoNothing()
     .returning();
 
-  let roleId = role?.id;
+  let roleId: number | null = role?.id ?? null;
   if (!roleId) {
     const existing = await db.query.adminRoles.findFirst({ where: eq(adminRoles.name, "Super Admin") });
     roleId = existing?.id ?? null;
