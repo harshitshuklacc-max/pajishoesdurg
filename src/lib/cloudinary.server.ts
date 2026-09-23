@@ -3,7 +3,7 @@ import { mkdir, unlink, writeFile } from "fs/promises";
 import { tmpdir } from "os";
 import { join, extname } from "path";
 import { randomUUID } from "crypto";
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -61,12 +61,12 @@ export async function uploadBuffer(
       const tmp = join(tmpdir(), `paji-${randomUUID()}${extname(originalName) || ".mp4"}`);
       await writeFile(tmp, buffer);
       try {
-        const result = await cloudinary.uploader.upload_large(tmp, {
+        const result = (await cloudinary.uploader.upload_large(tmp, {
           resource_type: "video",
           folder: `paji-shoes/${folder}`,
           chunk_size: 6_000_000,
           timeout: 120_000,
-        });
+        })) as UploadApiResponse;
         if (result.secure_url) {
           return { url: result.secure_url, publicId: result.public_id };
         }

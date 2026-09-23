@@ -69,10 +69,10 @@ export default function AdminVideosPage() {
         return;
       }
       if (field === "video") {
-        setForm((f) => ({ ...f, videoUrl: data.url, videoPublicId: data.publicId || "" }));
+        setForm((f) => ({ ...f, videoUrl: data.url ?? "", videoPublicId: data.publicId || "" }));
         setSuccess("Video uploaded. Click Add video to save it.");
       } else {
-        setForm((f) => ({ ...f, thumbnailUrl: data.url, thumbnailPublicId: data.publicId || "" }));
+        setForm((f) => ({ ...f, thumbnailUrl: data.url ?? "", thumbnailPublicId: data.publicId || "" }));
         setSuccess("Thumbnail uploaded");
       }
     } catch {
